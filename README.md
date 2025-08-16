@@ -3,7 +3,9 @@
 ## Overview
 **n8n Zalo OCR** is a fully automated workflow built on **n8n** to process invoices, shipping labels, and receipts sent via Zalo.It uses **Tesseract.js** for OCR and **Google Gemini** for AI-powered parsing to accurately capture key details and store them directly into **Google Sheets**, ensuring centralized, error-free, and real-time record management.
 
-<img width="1191" height="569" alt="image" src="https://github.com/user-attachments/assets/4e64fd46-819c-4dce-842c-c422977e51b9" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a149a3c0-5d34-4304-9d41-b03e377560e2" alt="System Architecture" width="800"/>
+</p>
 
 ## Key Features
 
