@@ -1,0 +1,109 @@
+// Debug and parse AI response
+console.log('Input data:', JSON.stringify($input.first().json, null, 2));
+
+// Try multiple ways to get AI response
+const inputJson = $input.first().json;
+let aiResponse = '';
+
+// Check various possible response fields
+if (inputJson.response) {
+  aiResponse = inputJson.response;
+} else if (inputJson.text) {
+  aiResponse = inputJson.text;
+} else if (inputJson.output) {
+  aiResponse = inputJson.output;
+} else if (inputJson.result) {
+  aiResponse = inputJson.result;
+} else {
+  // If no clear response, try the whole object as string
+  aiResponse = JSON.stringify(inputJson);
+}
+
+console.log('AI Response:', aiResponse);
+
+let extractedData;
+
+try {
+  // First try: parse as JSON directly
+  if (typeof aiResponse === 'object') {
+    extractedData = aiResponse;
+  } else {
+    extractedData = JSON.parse(aiResponse);
+  }
+} catch (error) {
+  console.log('JSON parse error:', error.message);
+  
+  try {
+    // Second try: extract JSON from text using regex
+    const jsonMatch = aiResponse.toString().match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      extractedData = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('No JSON found in response');
+    }
+  } catch (secondError) {
+    console.log('Second parse attempt failed:', secondError.message);
+    
+    // Third try: manual extraction from text
+    const text = aiResponse.toString();
+    extractedData = {
+      date_time: extractValue(text, ['ngày', 'date', 'thời gian']) || new Date().toISOString().split('T')[0],
+      total_price: extractValue(text, ['tổng', 'total', 'giá', 'price', 'tiền']) || "0",
+      tracking_code: extractValue(text, ['tracking', 'mã vận đơn', 'vận đơn']) || "",
+      order_code: extractValue(text, ['order', 'mã đơn', 'đơn hàng']) || "",
+      shipping_company: extractValue(text, ['company', 'công ty', 'giao hàng']) || "",
+      content_description: extractValue(text, ['content', 'nội dung', 'sản phẩm']) || "Không thể trích xuất",
+      quantity: extractValue(text, ['quantity', 'số lượng', 'sl']) || "",
+      weight: extractValue(text, ['weight', 'khối lượng', 'kg']) || "",
+      size: extractValue(text, ['size', 'kích thước', 'cỡ']) || ""
+    };
+  }
+}
+
+// Helper function to extract values from text
+function extractValue(text, keywords) {
+  for (const keyword of keywords) {
+    const regex = new RegExp(keyword + '\\s*:?\\s*([^\\n\\r,]+)', 'i');
+    const match = text.match(regex);
+    if (match && match[1]) {
+      return match[1].trim();
+    }
+  }
+  return "";
+}
+
+// Ensure all required fields exist with proper defaults
+const requiredFields = {
+  'date_time': new Date().toISOString().split('T')[0],
+  'total_price': "0",
+  'tracking_code': "",
+  'order_code': "",
+  'shipping_company': "",
+  'content_description': "Không thể trích xuất",
+  'quantity': "",
+  'weight': "",
+  'size': ""
+};
+
+// Fill missing fields
+Object.keys(requiredFields).forEach(field => {
+  if (!extractedData[field] || extractedData[field] === null || extractedData[field] === undefined) {
+    extractedData[field] = requiredFields[field];
+  }
+});
+
+// Clean and format data
+if (extractedData.total_price && typeof extractedData.total_price === 'string') {
+  // Remove currency symbols and non-digits
+  extractedData.total_price = extractedData.total_price.replace(/[^0-9]/g, '') || "0";
+}
+
+console.log('Final extracted data:', JSON.stringify(extractedData, null, 2));
+
+return {
+  json: {
+    output: extractedData,
+    raw_response: aiResponse,
+    debug_input: inputJson
+  }
+};

@@ -1,0 +1,3 @@
+API google drive: https://console.cloud.google.com/
+
+API key gemini: https://aistudio.google.com/apikey

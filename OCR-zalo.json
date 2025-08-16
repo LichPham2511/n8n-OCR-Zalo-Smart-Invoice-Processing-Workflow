@@ -1,0 +1,450 @@
+{
+  "name": "OCR-zalo",
+  "nodes": [
+    {
+      "parameters": {
+        "threadId": "={{ $json.message.threadId }}",
+        "type": "={{ $json.message.type }}",
+        "message": "🤖 **HỆ THỐNG XỬ LÝ HÓA ĐƠN THÔNG MINH**\n\n⚠️ **Cần hình ảnh để xử lý**\n\n📸 **Các loại tài liệu được hỗ trợ:**\n• Hóa đơn mua hàng (Shopee, Lazada, Tiki...)\n• Phiếu giao hàng (GHN, GHTK, ViettelPost...)\n• Hóa đơn nhà hàng/cửa hàng\n• Biên lai thanh toán\n• Xác nhận chuyển khoản\n\n💡 **Hướng dẫn:**\n1️⃣ Chụp ảnh rõ nét, đầy đủ thông tin\n2️⃣ Đảm bảo ánh sáng tốt\n3️⃣ Gửi ảnh và hệ thống sẽ tự động phân tích\n\n🚀 **Gửi ảnh ngay để bắt đầu!**",
+        "quote": {},
+        "mentions": {}
+      },
+      "type": "n8n-nodes-zalos-user.zaloSendMessage",
+      "typeVersion": 4,
+      "position": [
+        -400,
+        112
+      ],
+      "id": "247e8738-48e9-4cd3-9abb-191dc44c35de",
+      "name": "Help Message",
+      "credentials": {
+        "zaloApi": {
+          "id": "uGkhY1bGC4UxEgv4",
+          "name": "zalo-lich"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "image_check",
+              "leftValue": "={{ $json.message.data.content.href }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        -96
+      ],
+      "id": "d104f8f1-5905-4302-b242-febdf8d91ce4",
+      "name": "Validate Image Input"
+    },
+    {
+      "parameters": {
+        "threadId": "={{ $('Zalo Message Trigger').item.json.message.threadId }}",
+        "type": "={{ $('Zalo Message Trigger').item.json.message.type }}",
+        "message": "=✅ **ĐÃ XỬ LÝ THÀNH CÔNG**\n\n📄 **Loại tài liệu:** {{ $json.output.shipping_company ? 'Hóa đơn vận chuyển' : ($json.output.order_code ? 'Đơn hàng' : 'Hóa đơn/Receipt') }}\n\n📊 **THÔNG TIN TRÍCH XUẤT:**\n{{ $json.output.date_time ? '📅 Ngày: ' + $json.output.date_time : '' }}\n{{ $json.output.total_price ? '💰 Tổng tiền: ' + $json.output.total_price.toString().replace(/(\\d)(?=(\\d{3})+(?!\\d))/g, '$1,') + ' VNĐ' : '' }}\n{{ $json.output.order_code ? '📦 Mã đơn: ' + $json.output.order_code : '' }}\n{{ $json.output.tracking_code ? '🚚 Mã vận đơn: ' + $json.output.tracking_code : '' }}\n{{ $json.output.shipping_company ? '🏢 Đơn vị: ' + $json.output.shipping_company : '' }}\n{{ $json.output.content_description ? '📝 Nội dung: ' + $json.output.content_description : '' }}\n{{ $json.output.quantity ? '🔢 Số lượng: ' + $json.output.quantity : '' }}\n{{ $json.output.size ? '📏 Size: ' + $json.output.size : '' }}\n{{ $json.output.weight ? '⚖️ Khối lượng: ' + $json.output.weight : '' }}\n\n💾 **Đã lưu vào Google Sheets**\n⏰ Xử lý lúc: {{ new Date(Date.now() + 7*60*60*1000).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' }) }}",
+        "quote": {},
+        "mentions": {}
+      },
+      "type": "n8n-nodes-zalos-user.zaloSendMessage",
+      "typeVersion": 4,
+      "position": [
+        464,
+        64
+      ],
+      "id": "c26774d9-1030-4fd7-9602-91dd7e4a19f6",
+      "name": "Success Response",
+      "credentials": {
+        "zaloApi": {
+          "id": "uGkhY1bGC4UxEgv4",
+          "name": "zalo-lich"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1euhy85jNUlAkXdP6kmpI1olZNyOIm61BstUSkaPD1dY",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1euhy85jNUlAkXdP6kmpI1olZNyOIm61BstUSkaPD1dY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1euhy85jNUlAkXdP6kmpI1olZNyOIm61BstUSkaPD1dY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Số lượng": "={{ $json.output?.quantity || '1' }}",
+            "Size": "={{ $json.output?.size || '' }}",
+            "Đơn giá ": "={{ $json.output?.total_price || '0' }}",
+            "Ngày": "={{ $json.output.date_time }}",
+            "Mã vận đơn": "={{ $json.output.tracking_code }}",
+            "Mã đơn hàng": "={{ $json.output.order_code }}",
+            "Đơn vị vận chuyển": "={{ $json.output.shipping_company }}",
+            "Nội dung": "={{ $json.output.content_description }}",
+            "Khối lượng": "={{ $json.output.weight }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Ngày",
+              "displayName": "Ngày",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mã vận đơn",
+              "displayName": "Mã vận đơn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Mã đơn hàng",
+              "displayName": "Mã đơn hàng",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Đơn vị vận chuyển",
+              "displayName": "Đơn vị vận chuyển",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nội dung",
+              "displayName": "Nội dung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Số lượng",
+              "displayName": "Số lượng",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Size",
+              "displayName": "Size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Khối lượng",
+              "displayName": "Khối lượng",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Đơn giá ",
+              "displayName": "Đơn giá ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        640,
+        -160
+      ],
+      "id": "28905df6-3188-4452-adfd-ad552161646a",
+      "name": "Save to Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "BBhGOhMwVfBUinTa",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Debug data before sending to Google Sheets\nconst data = $input.first().json;\nconsole.log('Data going to Google Sheets:');\nconsole.log('Full JSON:', JSON.stringify(data, null, 2));\nconsole.log('Output object:', JSON.stringify(data.output, null, 2));\n\n// Test each field mapping\nconst mappings = {\n  'Ngày': data.output?.date_time || new Date().toISOString().split('T')[0],\n  'Mã vận đơn': data.output?.tracking_code || 'N/A',\n  'Mã đơn hàng': data.output?.order_code || 'AUTO_' + Date.now(),\n  'Đơn vị vận chuyển': data.output?.shipping_company || 'Không xác định',\n  'Nội dung': data.output?.content_description || 'Chưa có mô tả',\n  'Số lượng': data.output?.quantity || '1',\n  'Size': data.output?.size || '',\n  'Khối lượng': data.output?.weight || '',\n  'Đơn giá ': data.output?.total_price || '0'\n};\n\nconsole.log('Field mappings:', JSON.stringify(mappings, null, 2));\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        -128
+      ],
+      "id": "b1c6d84d-6b13-4616-aa56-3d2a418eed3d",
+      "name": "Debug Sheets Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Debug and parse AI response\nconsole.log('Input data:', JSON.stringify($input.first().json, null, 2));\n\n// Try multiple ways to get AI response\nconst inputJson = $input.first().json;\nlet aiResponse = '';\n\n// Check various possible response fields\nif (inputJson.response) {\n  aiResponse = inputJson.response;\n} else if (inputJson.text) {\n  aiResponse = inputJson.text;\n} else if (inputJson.output) {\n  aiResponse = inputJson.output;\n} else if (inputJson.result) {\n  aiResponse = inputJson.result;\n} else {\n  // If no clear response, try the whole object as string\n  aiResponse = JSON.stringify(inputJson);\n}\n\nconsole.log('AI Response:', aiResponse);\n\nlet extractedData;\n\ntry {\n  // First try: parse as JSON directly\n  if (typeof aiResponse === 'object') {\n    extractedData = aiResponse;\n  } else {\n    extractedData = JSON.parse(aiResponse);\n  }\n} catch (error) {\n  console.log('JSON parse error:', error.message);\n  \n  try {\n    // Second try: extract JSON from text using regex\n    const jsonMatch = aiResponse.toString().match(/\\{[\\s\\S]*\\}/);\n    if (jsonMatch) {\n      extractedData = JSON.parse(jsonMatch[0]);\n    } else {\n      throw new Error('No JSON found in response');\n    }\n  } catch (secondError) {\n    console.log('Second parse attempt failed:', secondError.message);\n    \n    // Third try: manual extraction from text\n    const text = aiResponse.toString();\n    extractedData = {\n      date_time: extractValue(text, ['ngày', 'date', 'thời gian']) || new Date().toISOString().split('T')[0],\n      total_price: extractValue(text, ['tổng', 'total', 'giá', 'price', 'tiền']) || \"0\",\n      tracking_code: extractValue(text, ['tracking', 'mã vận đơn', 'vận đơn']) || \"\",\n      order_code: extractValue(text, ['order', 'mã đơn', 'đơn hàng']) || \"\",\n      shipping_company: extractValue(text, ['company', 'công ty', 'giao hàng']) || \"\",\n      content_description: extractValue(text, ['content', 'nội dung', 'sản phẩm']) || \"Không thể trích xuất\",\n      quantity: extractValue(text, ['quantity', 'số lượng', 'sl']) || \"\",\n      weight: extractValue(text, ['weight', 'khối lượng', 'kg']) || \"\",\n      size: extractValue(text, ['size', 'kích thước', 'cỡ']) || \"\"\n    };\n  }\n}\n\n// Helper function to extract values from text\nfunction extractValue(text, keywords) {\n  for (const keyword of keywords) {\n    const regex = new RegExp(keyword + '\\\\s*:?\\\\s*([^\\\\n\\\\r,]+)', 'i');\n    const match = text.match(regex);\n    if (match && match[1]) {\n      return match[1].trim();\n    }\n  }\n  return \"\";\n}\n\n// Ensure all required fields exist with proper defaults\nconst requiredFields = {\n  'date_time': new Date().toISOString().split('T')[0],\n  'total_price': \"0\",\n  'tracking_code': \"\",\n  'order_code': \"\",\n  'shipping_company': \"\",\n  'content_description': \"Không thể trích xuất\",\n  'quantity': \"\",\n  'weight': \"\",\n  'size': \"\"\n};\n\n// Fill missing fields\nObject.keys(requiredFields).forEach(field => {\n  if (!extractedData[field] || extractedData[field] === null || extractedData[field] === undefined) {\n    extractedData[field] = requiredFields[field];\n  }\n});\n\n// Clean and format data\nif (extractedData.total_price && typeof extractedData.total_price === 'string') {\n  // Remove currency symbols and non-digits\n  extractedData.total_price = extractedData.total_price.replace(/[^0-9]/g, '') || \"0\";\n}\n\nconsole.log('Final extracted data:', JSON.stringify(extractedData, null, 2));\n\nreturn {\n  json: {\n    output: extractedData,\n    raw_response: aiResponse,\n    debug_input: inputJson\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -128
+      ],
+      "id": "0c742dfb-9184-4abc-ae36-313c94f12bc7",
+      "name": "Parse AI Response"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        80
+      ],
+      "id": "ce530b44-8dde-46d5-867c-35e913678c34",
+      "name": "Gemini Pro Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mrxHNSBslzhwOrpt",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "{{ $json.text }}",
+        "options": {
+          "systemMessage": "You are a professional Vietnamese invoice analyst. Extract information from invoices, receipts, and shipping documents.\n\nYour response must be EXACTLY this JSON format (copy this structure):\n{\n\"date_time\": \"YYYY-MM-DD\",\n\"total_price\": \"numbers_only\",\n\"tracking_code\": \"text_or_empty_string\",\n\"order_code\": \"text_or_empty_string\",\n\"shipping_company\": \"text_or_empty_string\",\n\"content_description\": \"text_or_empty_string\",\n\"quantity\": \"text_or_empty_string\",\n\"weight\": \"text_or_empty_string\",\n\"size\": \"text_or_empty_string\"\n}\n\nRules:\n- Extract date and convert to YYYY-MM-DD format\n- Extract total amount, remove VNĐ/đ symbols, keep numbers only\n- Find tracking/shipping codes\n- Find order/invoice numbers\n- Identify company/platform names\n- Extract product descriptions\n- Find quantity information\n- Extract weight (kg, g)\n- Find size info (S,M,L,XL)\n- Use empty string \"\" for missing fields\n- Return ONLY the JSON, no other text"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        16,
+        -128
+      ],
+      "id": "a8f56b80-39d6-45cd-9af9-4397478701f5",
+      "name": "Smart Invoice AI"
+    },
+    {
+      "parameters": {
+        "options": {
+          "language": "vie+eng"
+        }
+      },
+      "type": "n8n-nodes-tesseractjs.tesseractNode",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -128
+      ],
+      "id": "a5a5e665-751b-4622-85d9-79541db1048e",
+      "name": "Tesseract OCR"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.message.data.content.href }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -368,
+        -128
+      ],
+      "id": "c247bd41-9e83-4e86-90de-ca98901211ad",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-zalos-user.zaloMessageTrigger",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -80
+      ],
+      "id": "f5405450-cb04-44d4-831c-7dfbb0b3de08",
+      "name": "Zalo Message Trigger",
+      "webhookId": "845b53ea-fb24-4ff8-ba97-0daf4e8f1901",
+      "credentials": {
+        "zaloApi": {
+          "id": "uGkhY1bGC4UxEgv4",
+          "name": "zalo-lich"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Validate Image Input": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Help Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Debug Sheets Data": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Debug Sheets Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Pro Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Smart Invoice AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Smart Invoice AI": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tesseract OCR": {
+      "main": [
+        [
+          {
+            "node": "Smart Invoice AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Tesseract OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zalo Message Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Image Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "13c15644-cb4a-4b86-a88f-bd2899e529d8",
+  "meta": {
+    "instanceId": "2b0f722d9af2cb75e39eae8097a3393439f43cd078decf672b020f10d7e99f97"
+  },
+  "id": "HQIswIX6B2gMYyJd",
+  "tags": []
+}

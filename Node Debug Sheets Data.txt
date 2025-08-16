@@ -1,0 +1,22 @@
+// Debug data before sending to Google Sheets
+const data = $input.first().json;
+console.log('Data going to Google Sheets:');
+console.log('Full JSON:', JSON.stringify(data, null, 2));
+console.log('Output object:', JSON.stringify(data.output, null, 2));
+
+// Test each field mapping
+const mappings = {
+  'Ngày': data.output?.date_time || new Date().toISOString().split('T')[0],
+  'Mã vận đơn': data.output?.tracking_code || 'N/A',
+  'Mã đơn hàng': data.output?.order_code || 'AUTO_' + Date.now(),
+  'Đơn vị vận chuyển': data.output?.shipping_company || 'Không xác định',
+  'Nội dung': data.output?.content_description || 'Chưa có mô tả',
+  'Số lượng': data.output?.quantity || '1',
+  'Size': data.output?.size || '',
+  'Khối lượng': data.output?.weight || '',
+  'Đơn giá ': data.output?.total_price || '0'
+};
+
+console.log('Field mappings:', JSON.stringify(mappings, null, 2));
+
+return $input.all();
